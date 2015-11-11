@@ -1,5 +1,7 @@
 var crypto = require('crypto');
 
+var Session = require('./Session.js');
+
 exports.authenticator = function( secret, options ) {
   return new Authenticator( secret, options );
 };
@@ -22,11 +24,7 @@ function Authenticator( secret, options ) {
   }
 }
 
-function Session( properties ) {
-  if (!properties) properties = {};
-  this.userId = properties.userId;
-  this.expiresAt = properties.expiresAt;
-}
+
 
 function SessionToken( properties ) {
   if (!properties) properties = {};
@@ -68,30 +66,6 @@ Authenticator.prototype._validate = function( data, salt, checksum ) {
 };
 
 
-Session.prototype.expired = function() {
-  if ( this.expiresAt == null ) {
-    return true;
-  }
-  if ( this.expiresAt >= ( new Date().getTime() / 1000 / 60 ) ) {
-    return true;
-  }
-  return false;
-};
-
-Session.prototype.stringify = function() {
-  return JSON.stringify(this);
-};
-
-Session.parse = function( session_string ) {
-  return new Session( JSON.parse( session_string ) );
-};
-
-Session.start = function( userId, sessionLength ) {
-  return new Session({
-    userId: userId,
-    expiresAt: ( new Date().getTime() / 1000 / 60 ) + sessionLength
-  });
-};
 
 SessionToken.prototype.stringify = function() {
   var json = JSON.stringify( this );
