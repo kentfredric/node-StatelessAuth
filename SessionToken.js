@@ -1,3 +1,5 @@
+var Session = require('./Session.js');
+
 module.exports = SessionToken;
 
 function SessionToken( properties ) {
@@ -16,10 +18,8 @@ SessionToken.parse = function( session_string ) {
   return new SessionToken( JSON.parse( buffer.toString() ) );
 };
 
-SessionToken.create = function( session ) {
-  return new SessionToken({
-    session: session,
-  });
+SessionToken.create = function() {
+  return new SessionToken({});
 };
 
 SessionToken.prototype.sign = function( signer, salt ) {
@@ -29,4 +29,14 @@ SessionToken.prototype.sign = function( signer, salt ) {
 
 SessionToken.prototype.validate = function( signer, salt ) {
   return signer.validate( this.session, salt, this.checksum );
+};
+
+SessionToken.prototype.start = function( userId, expireTime ) {
+  this._session_cached = Session.start( userId, this.defaultExpireTime );
+  this.session = this._session_cached.stringify();
+  return this;
+};
+SessionToken.prototype.getSession = function() {
+  if ( !this._session_cached ) this._session_cached = Session.parse( this.session );
+  return this._session_cached;
 };
