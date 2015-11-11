@@ -6,20 +6,12 @@ module.exports = Authenticator;
 
 function Authenticator( secret, options ) {
   this.secret = secret;
-  if ( typeof options != 'undefined' ) {
-    if ( typeof options.defaultExpireTime != 'undefined' ) {
-      this.defaultExpireTime = options.defaultExpireTime;
-    }
-    if ( typeof options.getUserSalt != 'undefined' ) {
-      this.getUserSalt = options.getUserSalt;
-    }
-    if ( typeof options.mac != 'undefined' ) {
-      this.mac = options.mac;
-    }
-    if ( typeof options.digest != 'undefined' ) {
-      this.digest = options.digest;
-    }
-  }
+  if ( !options ) options = {};
+  if ( options.defaultExpireTime ) this.defaultExpireTime = options.defaultExpireTime;
+  if ( options.getUserSalt )       this.getUserSalt       = options.getUserSalt;
+  if ( options.mac )               this.mac               = options.mac;
+  if ( options.digest )            this.digest            = options.digest;
+
   this.signer = new Signer({
     mac: this.mac,
     digest: this.digest,
