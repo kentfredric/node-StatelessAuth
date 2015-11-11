@@ -31,10 +31,11 @@ SessionToken.prototype.validate = function( signer, salt ) {
   return signer.validate( this.session, salt, this.checksum );
 };
 
-SessionToken.prototype.start = function( userId, expireTime ) {
-  this._session_cached = Session.start( userId, this.defaultExpireTime );
-  this.session = this._session_cached.stringify();
-  return this;
+SessionToken.start = function( userId, expireTime ) {
+  var self = new SessionToken({});
+  self._session_cached = Session.start( userId, this.defaultExpireTime );
+  self.session = self._session_cached.stringify();
+  return self;
 };
 SessionToken.prototype.getSession = function() {
   if ( !this._session_cached ) this._session_cached = Session.parse( this.session );

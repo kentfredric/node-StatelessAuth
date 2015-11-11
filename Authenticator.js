@@ -26,7 +26,7 @@ Authenticator.prototype.getUserSalt = function( userId ) {
     return "";
 };
 Authenticator.prototype.createSession = function( userId ) {
-  return SessionToken.create()
+  return SessionToken
           .start( userId, this.defaultExpireTime )
           .sign( this.signer, this.getUserSalt( userId ) )
           .stringify();
