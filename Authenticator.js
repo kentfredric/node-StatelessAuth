@@ -2,6 +2,7 @@ var crypto = require('crypto');
 
 var Session = require('./Session.js');
 var SessionToken = require('./SessionToken.js');
+var Signer = require('./Signer.js');
 
 module.exports = Authenticator;
 
@@ -21,6 +22,11 @@ function Authenticator( secret, options ) {
       this.digest = options.digest;
     }
   }
+  this.signer = new Signer({
+    mac: this.mac,
+    digest: this.digest,
+    secret: this.secret,
+  });
 }
 
 Authenticator.prototype.secret = "";
@@ -32,7 +38,7 @@ Authenticator.prototype.getUserSalt = function( userId ) {
 };
 Authenticator.prototype.createSession = function( userId ) {
   var session = Session.start( userId, this.defaultExpireTime ).stringify();
-  return SessionToken.create( session, this._sign( session, this.getUserSalt( userId ) ) ).stringify();
+  return SessionToken.create( session, this.signer.sign( session, this.getUserSalt( userId ) ) ).stringify();
 };
 Authenticator.prototype.validateSession = function( token ) {
     var sessionToken = SessionToken.parse( token );
@@ -40,17 +46,8 @@ Authenticator.prototype.validateSession = function( token ) {
     if ( session.expired() ) {
       return false;
     }
-    if ( this._validate(  sessionToken.session, this.getUserSalt( session.userId ), sessionToken.checksum ) ) {
+    if ( this.signer.validate(  sessionToken.session, this.getUserSalt( session.userId ), sessionToken.checksum ) ) {
       return session.userId;
     }
     return false;
-};
-Authenticator.prototype._sign  = function ( data, salt ) {
-  var hmac = crypto.createHmac( this.mac, this.secret );
-  hmac.update( salt );
-  hmac.update( data );
-  return hmac.digest( this.digest );
-};
-Authenticator.prototype._validate = function( data, salt, checksum ) {
-  return this._sign(data, salt) == checksum;
 };
