@@ -1,0 +1,52 @@
+### Basic Usage
+
+Create an authenticator instance with the given secret.
+
+```javascript
+var authenticator = require('./StatelessAuth.js').authenticator( "SEKRET" );
+```
+
+Generate an authentication key for a user:
+
+```javascript
+if ( username_and_password_checkout ) {
+  var token = authenticator.createSession( userId );
+  // send token back to user
+```
+
+Authenticate a subsequent request:
+
+```javascript
+// validate and return the user id from the token
+var userId = authenticator.validateSession( token );
+if ( userId == false ) {
+  throw "Validation failed bitch";
+}
+```
+
+### Advanced Usage
+
+Create an authenticator with the given secret and the given options.
+
+```javascript
+  var authenticator = require('./StatelessAuth.js').authenticator( "SEKRET", {OPTIONS} );
+```
+
+#### Option Values
+
+```javascript
+{
+    mac: "sha512",      // The hash algorithm used for checksum
+    digest: "binary",   // What format the digest gets stored in in the final JSON structure
+    defaultExpireTime: 3 * 60 * 24,   // Time in minutes for a session to last
+    getUserSalt: function( userId ) {
+      return ""; // return an extra bit of salt that is user-dependent but not shared
+                 // over the network to uniqulely thwart bulk attacks
+                 // if the global secret gets leaked or broken
+                 // This value can also be changed server-side
+                 // to invalidate all a users sessions without needing to track
+                 // independent sessions
+    }
+}
+
+```
