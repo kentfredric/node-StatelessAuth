@@ -1,5 +1,3 @@
-var crypto = require('crypto');
-
 var Session = require('./Session.js');
 var SessionToken = require('./SessionToken.js');
 var Signer = require('./Signer.js');
@@ -38,7 +36,9 @@ Authenticator.prototype.getUserSalt = function( userId ) {
 };
 Authenticator.prototype.createSession = function( userId ) {
   var session = Session.start( userId, this.defaultExpireTime ).stringify();
-  return SessionToken.create( session, this.signer.sign( session, this.getUserSalt( userId ) ) ).stringify();
+  return SessionToken.create( session )
+          .sign( this.signer, this.getUserSalt( userId ) )
+          .stringify();
 };
 Authenticator.prototype.validateSession = function( token ) {
     var sessionToken = SessionToken.parse( token );
@@ -46,7 +46,7 @@ Authenticator.prototype.validateSession = function( token ) {
     if ( session.expired() ) {
       return false;
     }
-    if ( this.signer.validate(  sessionToken.session, this.getUserSalt( session.userId ), sessionToken.checksum ) ) {
+    if ( sessionToken.validate( this.signer , sessionToken.checksum ) ) {
       return session.userId;
     }
     return false;

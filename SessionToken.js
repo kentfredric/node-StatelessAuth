@@ -16,9 +16,17 @@ SessionToken.parse = function( session_string ) {
   return new SessionToken( JSON.parse( buffer.toString() ) );
 };
 
-SessionToken.create = function( session, checksum ) {
+SessionToken.create = function( session ) {
   return new SessionToken({
     session: session,
-    checksum: checksum,
   });
+};
+
+SessionToken.prototype.sign = function( signer, salt ) {
+  this.checksum = signer.sign( this.session, salt );
+  return this;
+};
+
+SessionToken.prototype.validate = function( signer, salt ) {
+  return signer.validate( this.session, salt, this.checksum );
 };
