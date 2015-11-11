@@ -22,6 +22,19 @@ function Authenticator( secret, options ) {
   }
 }
 
+function Session( properties ) {
+  if (!properties) properties = {};
+  this.userId = properties.userId;
+  this.expiresAt = properties.expiresAt;
+}
+
+function SessionToken( properties ) {
+  if (!properties) properties = {};
+  this.session = properties.session;
+  this.checksum = properties.checksum;
+}
+
+
 Authenticator.prototype.secret = "";
 Authenticator.prototype.mac    = "sha512";
 Authenticator.prototype.digest = "binary";
@@ -30,25 +43,17 @@ Authenticator.prototype.getUserSalt = function( userId ) {
     return "";
 };
 Authenticator.prototype.createSession = function( userId ) {
-  var data = JSON.stringify({
-    userId: userId,
-    expires: generate_expire_timestamp( this.defaultExpireTime )
-  });
-  return base64_encode(
-    JSON.stringify({
-      data: data,
-      checksum: this._sign( data, this.getUserSalt( userId ) )
-    })
-  );
+  var session = Session.start( userId, this.defaultExpireTime ).stringify();
+  return SessionToken.create( session, this._sign( session, this.getUserSalt( userId ) ) ).stringify();
 };
 Authenticator.prototype.validateSession = function( token ) {
-    var session = JSON.parse( base64_decode( token ) );
-    var data = JSON.parse( session.data );
-    if ( !validate_expire_timestamp( data.expires ) ) {
+    var sessionToken = SessionToken.parse( token );
+    var session = Session.parse( sessionToken.session );
+    if ( session.expired() ) {
       return false;
     }
-    if ( this._validate( session.data, this.getUserSalt( data.userId ), session.checksum ) ) {
-      return data.userId;
+    if ( this._validate(  sessionToken.session, this.getUserSalt( session.userId ), sessionToken.checksum ) ) {
+      return session.userId;
     }
     return false;
 };
@@ -62,22 +67,45 @@ Authenticator.prototype._validate = function( data, salt, checksum ) {
   return this._sign(data, salt) == checksum;
 };
 
-function now_minute() {
-  return ( new Date().getTime() / 1000 / 60 );
-}
-// expire_time is in minutes.
-function generate_expire_timestamp( expire_time ) {
-  return now_minute() + expire_time;
-}
 
-function validate_expire_timestamp( timestamp ) {
-  return now_minute() <= timestamp;
-}
+Session.prototype.expired = function() {
+  if ( this.expiresAt == null ) {
+    return true;
+  }
+  if ( this.expiresAt >= ( new Date().getTime() / 1000 / 60 ) ) {
+    return true;
+  }
+  return false;
+};
 
-function base64_encode( data ) {
-  return (new Buffer( data )).toString('base64');
-}
+Session.prototype.stringify = function() {
+  return JSON.stringify(this);
+};
 
-function base64_decode( data ) {
-  return (new Buffer( data, 'base64' )).toString();
-}
+Session.parse = function( session_string ) {
+  return new Session( JSON.parse( session_string ) );
+};
+
+Session.start = function( userId, sessionLength ) {
+  return new Session({
+    userId: userId,
+    expiresAt: ( new Date().getTime() / 1000 / 60 ) + sessionLength
+  });
+};
+
+SessionToken.prototype.stringify = function() {
+  var json = JSON.stringify( this );
+  return (new Buffer( json )).toString('base64');
+};
+
+SessionToken.parse = function( session_string ) {
+  var buffer = new Buffer( session_string, 'base64' );
+  return new SessionToken( JSON.parse( buffer.toString() ) );
+};
+
+SessionToken.create = function( session, checksum ) {
+  return new SessionToken({
+    session: session,
+    checksum: checksum,
+  });
+};
