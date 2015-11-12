@@ -8,18 +8,14 @@ function Authenticator( secret, options ) {
   if ( !options ) options = {};
   if ( options.defaultExpireTime ) this.defaultExpireTime = options.defaultExpireTime;
   if ( options.getUserSalt ) this.getUserSalt = options.getUserSalt;
-  if ( options.mac ) this.mac = options.mac;
-  if ( options.digest ) this.digest = options.digest;
 
   this.signer = new Signer( {
-    mac: this.mac,
-    digest: this.digest,
+    mac: options.mac,
+    digest: options.digest,
     secret: secret
   } );
 }
 
-Authenticator.prototype.mac = "sha512";
-Authenticator.prototype.digest = "binary";
 Authenticator.prototype.defaultExpireTime = ( 3 * 24 * 60 ); // 3 days of minutes
 Authenticator.prototype.getUserSalt = function( userId ) {
   return "";
