@@ -4,7 +4,7 @@ var Signer = require( './Signer.js' );
 module.exports = Authenticator;
 
 function Authenticator( secret, options ) {
-  this.secret = secret;
+
   if ( !options ) options = {};
   if ( options.defaultExpireTime ) this.defaultExpireTime = options.defaultExpireTime;
   if ( options.getUserSalt ) this.getUserSalt = options.getUserSalt;
@@ -14,11 +14,10 @@ function Authenticator( secret, options ) {
   this.signer = new Signer( {
     mac: this.mac,
     digest: this.digest,
-    secret: this.secret
+    secret: secret
   } );
 }
 
-Authenticator.prototype.secret = "";
 Authenticator.prototype.mac = "sha512";
 Authenticator.prototype.digest = "binary";
 Authenticator.prototype.defaultExpireTime = ( 3 * 24 * 60 ); // 3 days of minutes
