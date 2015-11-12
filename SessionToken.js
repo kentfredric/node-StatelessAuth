@@ -1,16 +1,17 @@
-var Session = require('./Session.js');
+var Session = require( './Session.js' );
 
 module.exports = SessionToken;
 
 function SessionToken( properties ) {
-  if (!properties) properties = {};
+  if ( !properties ) properties = {};
   this.session = properties.session;
   this.checksum = properties.checksum;
 }
 
 SessionToken.prototype.stringify = function() {
   var json = JSON.stringify( this );
-  return (new Buffer( json )).toString('base64');
+  return ( new Buffer( json ) )
+    .toString( 'base64' );
 };
 
 SessionToken.parse = function( session_string ) {
@@ -28,7 +29,7 @@ SessionToken.prototype.validate = function( signer, salt ) {
 };
 
 SessionToken.start = function( userId, expireTime ) {
-  var self = new SessionToken({});
+  var self = new SessionToken( {} );
   self._session_cached = Session.start( userId, expireTime );
   self.session = self._session_cached.stringify();
   return self;
