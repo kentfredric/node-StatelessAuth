@@ -8,15 +8,22 @@ function SessionToken( properties ) {
   this.checksum = properties.checksum;
 }
 
-SessionToken.prototype.stringify = function() {
-  var json = JSON.stringify( this );
-  return ( new Buffer( json ) )
+function base64_encode( content ) {
+  return new Buffer( content )
     .toString( 'base64' );
+}
+
+function base64_decode( content ) {
+  return new Buffer( content, 'base64' )
+    .toString();
+}
+
+SessionToken.prototype.stringify = function() {
+  return base64_encode( JSON.stringify( this ) );
 };
 
 SessionToken.parse = function( session_string ) {
-  var buffer = new Buffer( session_string, 'base64' );
-  return new SessionToken( JSON.parse( buffer.toString() ) );
+  return new SessionToken( JSON.parse( base64_decode( session_string ) ) );
 };
 
 SessionToken.prototype.sign = function( signer, salt ) {
@@ -34,6 +41,7 @@ SessionToken.start = function( userId, expireTime ) {
   self.session = self._session_cached.stringify();
   return self;
 };
+
 SessionToken.prototype.getSession = function() {
   if ( !this._session_cached ) this._session_cached = Session.parse( this.session );
   return this._session_cached;

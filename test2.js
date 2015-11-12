@@ -28,18 +28,17 @@ console.log( "Session key", token );
 
 // Pretend use authkey
 
-var session = SessionToken.parse( token );
-var userid = session.getSession()
-  .userId;
+var sessionToken = SessionToken.parse( token );
+var session = sessionToken.getSession();
 
-if ( session.getSession()
-  .expired() ) {
-  console.log( ( new Date() )
-    .getTime() / 60 / 1000 );
+var userid = session.userId;
+
+if ( session.expired() ) {
+  console.log( Session.now() );
   console.log( session );
   throw "Login expired!"
 }
-if ( session.validate( signer, getUserSalt( userid ) ) ) {
+if ( sessionToken.validate( signer, getUserSalt( userid ) ) ) {
   console.log( "Login success for user " + userid );
 } else {
   throw "Login failed";

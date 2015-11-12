@@ -33,14 +33,12 @@ Authenticator.prototype.createSession = function( userId ) {
 };
 Authenticator.prototype.validateSession = function( token ) {
   var sessionToken = SessionToken.parse( token );
-  if ( sessionToken.getSession()
-    .expired() ) {
+  var session = sessionToken.getSession();
+  if ( session.expired() ) {
     return false;
   }
-  if ( sessionToken.validate( this.signer, this.getUserSalt( sessionToken.getSession()
-      .userId ) ) ) {
-    return sessionToken.getSession()
-      .userId;
+  if ( sessionToken.validate( this.signer, this.getUserSalt( session.userId ) ) ) {
+    return session.userId;
   }
   return false;
 };
