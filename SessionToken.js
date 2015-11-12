@@ -33,7 +33,7 @@ SessionToken.prototype.validate = function( signer, salt ) {
 
 SessionToken.start = function( userId, expireTime ) {
   var self = new SessionToken({});
-  self._session_cached = Session.start( userId, this.defaultExpireTime );
+  self._session_cached = Session.start( userId, expireTime );
   self.session = self._session_cached.stringify();
   return self;
 };
