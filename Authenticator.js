@@ -36,7 +36,7 @@ Authenticator.prototype.validateSession = function( token ) {
     if ( sessionToken.getSession().expired() ) {
       return false;
     }
-    if ( sessionToken.validate( this.signer , sessionToken.checksum ) ) {
+    if ( sessionToken.validate( this.signer , this.getUserSalt( sessionToken.getSession().userId ) ) ) {
       return sessionToken.getSession().userId;
     }
     return false;
