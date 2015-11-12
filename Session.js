@@ -10,7 +10,7 @@ Session.prototype.expired = function() {
   if ( this.expiresAt == null ) {
     return true;
   }
-  if ( this.expiresAt >= ( new Date().getTime() / 1000 / 60 ) ) {
+  if ( this.expiresAt <= ( new Date().getTime() / 1000 / 60 ) ) {
     return true;
   }
   return false;
